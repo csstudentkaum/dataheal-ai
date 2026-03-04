@@ -1,15 +1,20 @@
 import csv
 import json
 import io
+import os
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.contrib import messages
+from django.conf import settings
 
 from .models import SurveyDataset, SurveyRecord
 from .ai_validator import validate_with_openai, determine_status, generate_sample_dataset
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -31,16 +36,24 @@ def upload_view(request):
             messages.error(request, 'صيغة الملف غير مدعومة. الرجاء رفع ملف CSV أو JSON')
             return render(request, 'validator/upload.html')
 
-        # Create dataset
-        dataset = SurveyDataset.objects.create(
-            name=uploaded_file.name,
-            file=uploaded_file,
-        )
-
-        # Parse file
         try:
-            uploaded_file.seek(0)
+            # Ensure media/uploads directory exists
+            upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+
+            # Read content BEFORE saving (in case seek fails after save)
             content = uploaded_file.read().decode('utf-8')
+
+            # Reset for Django to save the file
+            uploaded_file.seek(0)
+
+            # Create dataset
+            dataset = SurveyDataset.objects.create(
+                name=uploaded_file.name,
+                file=uploaded_file,
+            )
+
+            # Parse file
             if filename.endswith('.csv'):
                 records = _parse_csv(content)
             else:
@@ -61,7 +74,9 @@ def upload_view(request):
             return redirect('validate_dataset', dataset_id=dataset.id)
 
         except Exception as e:
-            dataset.delete()
+            logger.error(f'Upload error: {e}', exc_info=True)
+            if 'dataset' in locals():
+                dataset.delete()
             messages.error(request, f'حدث خطأ أثناء معالجة الملف: {str(e)}')
             return render(request, 'validator/upload.html')
 
