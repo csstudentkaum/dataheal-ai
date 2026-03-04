@@ -1,0 +1,145 @@
+{% extends "validator/base.html" %}
+{% load static %}
+{% block title %}الرئيسية{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="text-center py-5 animate-in">
+    <div class="mb-4">
+        <img src="{% static 'img/logo.png' %}" alt="DataHeal AI" style="width: 160px; height: 160px; object-fit: contain; filter: drop-shadow(0 4px 16px rgba(31, 214, 208, 0.3));">
+    </div>
+    <h1 style="font-size: 2.8rem; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        DataHeal AI
+    </h1>
+    <p style="font-size: 1.3rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 2rem;">
+        تصحيح البيانات الدلالي الذكي — نظام ذكاء اصطناعي لاكتشاف التناقضات المنطقية في بيانات الاستبيانات
+    </p>
+    <div class="d-flex flex-column align-items-center gap-4">
+        <a href="{% url 'upload' %}" class="btn btn-gradient btn-lg">
+            رفع بيانات الاستبيان
+        </a>
+    </div>
+</div>
+
+<!-- Features -->
+<div class="row g-4 mt-4">
+    <div class="col-md-4 animate-in delay-1">
+        <div class="stat-card text-center h-100">
+            <div class="stat-icon mx-auto" style="background: rgba(31, 214, 208, 0.1); color: var(--primary);">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h5 class="fw-bold mb-2">تحليل ذكي بالذكاء الاصطناعي</h5>
+            <p class="text-muted mb-0" style="font-size: 0.9rem;">
+                يستخدم نماذج لغوية كبيرة (LLM) للكشف عن التناقضات الدلالية والمنطقية في بيانات الاستبيانات
+            </p>
+        </div>
+    </div>
+    <div class="col-md-4 animate-in delay-2">
+        <div class="stat-card text-center h-100">
+            <div class="stat-icon mx-auto" style="background: rgba(139, 92, 246, 0.1); color: var(--secondary);">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <h5 class="fw-bold mb-2">لوحة تحكم تفاعلية</h5>
+            <p class="text-muted mb-0" style="font-size: 0.9rem;">
+                عرض نتائج التحقق بشكل مرئي مع درجات الثقة ومؤشرات الحالة وتقارير مفصلة
+            </p>
+        </div>
+    </div>
+    <div class="col-md-4 animate-in delay-3">
+        <div class="stat-card text-center h-100">
+            <div class="stat-icon mx-auto" style="background: rgba(110, 231, 249, 0.15); color: #0EA5E9;">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <h5 class="fw-bold mb-2">تحقق لحظي</h5>
+            <p class="text-muted mb-0" style="font-size: 0.9rem;">
+                واجهة برمجية (API) للتحقق من السجلات بشكل فوري ومباشر مع استجابة سريعة
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- How it works -->
+<div class="mt-5 pt-4">
+    <h3 class="section-title text-center">كيف يعمل النظام؟</h3>
+    <p class="section-subtitle text-center">ثلاث خطوات بسيطة لتصحيح بياناتك</p>
+
+    <div class="row g-4">
+        <div class="col-md-4 animate-in delay-1">
+            <div class="card-custom p-4 text-center h-100">
+                <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                     style="width: 60px; height: 60px; background: var(--gradient); color: white; font-size: 1.5rem; font-weight: 800;">
+                    ١
+                </div>
+                <h5 class="fw-bold">رفع الملف</h5>
+                <p class="text-muted mb-0">ارفع ملف الاستبيان بصيغة CSV أو JSON</p>
+            </div>
+        </div>
+        <div class="col-md-4 animate-in delay-2">
+            <div class="card-custom p-4 text-center h-100">
+                <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                     style="width: 60px; height: 60px; background: var(--gradient); color: white; font-size: 1.5rem; font-weight: 800;">
+                    ٢
+                </div>
+                <h5 class="fw-bold">تحليل البيانات</h5>
+                <p class="text-muted mb-0">يقوم الذكاء الاصطناعي بتحليل كل سجل واكتشاف التناقضات</p>
+            </div>
+        </div>
+        <div class="col-md-4 animate-in delay-3">
+            <div class="card-custom p-4 text-center h-100">
+                <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                     style="width: 60px; height: 60px; background: var(--gradient); color: white; font-size: 1.5rem; font-weight: 800;">
+                    ٣
+                </div>
+                <h5 class="fw-bold">عرض النتائج</h5>
+                <p class="text-muted mb-0">استعرض النتائج في لوحة تحكم تفاعلية وحمّل التقرير</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent datasets -->
+{% if datasets %}
+<div class="mt-5 pt-3">
+    <h3 class="section-title">آخر مجموعات البيانات</h3>
+    <p class="section-subtitle">مجموعات البيانات المرفوعة مؤخراً</p>
+    <div class="card-custom">
+        <div class="table-responsive">
+            <table class="table table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th>اسم الملف</th>
+                        <th>عدد السجلات</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الرفع</th>
+                        <th>إجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ds in datasets %}
+                    <tr>
+                        <td><i class="fas fa-file-csv ms-2" style="color: var(--primary);"></i>{{ ds.name }}</td>
+                        <td>{{ ds.total_records }}</td>
+                        <td>
+                            {% if ds.processed %}
+                                <span class="badge-clean">تم التحليل</span>
+                            {% else %}
+                                <span class="badge-pending">قيد الانتظار</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ ds.uploaded_at|date:"Y/m/d H:i" }}</td>
+                        <td>
+                            {% if ds.processed %}
+                                <a href="{% url 'dashboard' ds.id %}" class="btn btn-sm btn-gradient">عرض النتائج</a>
+                            {% else %}
+                                <a href="{% url 'validate_dataset' ds.id %}" class="btn btn-sm btn-outline-custom">تحليل البيانات</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

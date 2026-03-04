@@ -1,0 +1,318 @@
+{% extends "validator/base.html" %}
+{% block title %}لوحة التحكم{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 animate-in">
+    <div>
+        <h2 class="section-title mb-1">
+            <i class="fas fa-chart-line ms-2" style="color: var(--primary);"></i>
+            لوحة التحكم
+        </h2>
+        <p class="section-subtitle mb-0">نتائج التحقق الدلالي — {{ dataset.name }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'download_report' dataset.id %}" class="btn btn-outline-custom">
+            <i class="fas fa-download ms-2"></i> تحميل التقرير
+        </a>
+        <a href="{% url 'upload' %}" class="btn btn-gradient">
+            <i class="fas fa-plus ms-2"></i> رفع ملف جديد
+        </a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3 animate-in delay-1">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(31, 214, 208, 0.1); color: var(--primary);">
+                <i class="fas fa-database"></i>
+            </div>
+            <div class="stat-value">{{ total }}</div>
+            <div class="stat-label">إجمالي السجلات</div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-in delay-2">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-value" style="color: #10B981;">{{ clean_count }}</div>
+            <div class="stat-label">السجلات السليمة</div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-in delay-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #EF4444;">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="stat-value" style="color: #EF4444;">{{ error_count }}</div>
+            <div class="stat-label">السجلات التي تحتوي أخطاء</div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-in delay-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--secondary);">
+                <i class="fas fa-percentage"></i>
+            </div>
+            <div class="stat-value" style="color: var(--secondary);">{{ avg_confidence }}%</div>
+            <div class="stat-label">متوسط درجة الثقة</div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart-like visualization -->
+<div class="row g-4 mb-4">
+    <div class="col-md-8 animate-in delay-2">
+        <div class="card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-chart-bar ms-2" style="color: var(--secondary);"></i> توزيع حالات السجلات</h5>
+            <div class="row g-3">
+                <div class="col-4">
+                    <div class="text-center p-3 rounded-3" style="background: rgba(16, 185, 129, 0.06);">
+                        <div class="fw-bold" style="font-size: 1.8rem; color: #10B981;">{{ clean_count }}</div>
+                        <small class="text-muted">بيانات سليمة</small>
+                        <div class="progress-custom mt-2">
+                            <div class="progress-bar-custom" style="width: {% widthratio clean_count total 100 %}%; background: #10B981; height: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="text-center p-3 rounded-3" style="background: rgba(245, 158, 11, 0.06);">
+                        <div class="fw-bold" style="font-size: 1.8rem; color: #F59E0B;">{{ review_count }}</div>
+                        <small class="text-muted">تحتاج مراجعة</small>
+                        <div class="progress-custom mt-2">
+                            <div class="progress-bar-custom" style="width: {% widthratio review_count total 100 %}%; background: #F59E0B; height: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="text-center p-3 rounded-3" style="background: rgba(239, 68, 68, 0.06);">
+                        <div class="fw-bold" style="font-size: 1.8rem; color: #EF4444;">{{ error_count }}</div>
+                        <small class="text-muted">خطأ منطقي</small>
+                        <div class="progress-custom mt-2">
+                            <div class="progress-bar-custom" style="width: {% widthratio error_count total 100 %}%; background: #EF4444; height: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 animate-in delay-3">
+        <div class="card-custom p-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="fas fa-bullseye ms-2" style="color: var(--primary);"></i> متوسط الثقة</h5>
+            <div class="text-center py-3">
+                <div class="position-relative d-inline-block">
+                    <svg width="140" height="140" viewBox="0 0 140 140">
+                        <circle cx="70" cy="70" r="60" stroke="#f1f5f9" stroke-width="12" fill="none"/>
+                        <circle cx="70" cy="70" r="60" stroke="url(#grad)" stroke-width="12" fill="none"
+                               stroke-dasharray="{{ avg_confidence|floatformat:0 }},{% widthratio avg_confidence 1 1 %}"
+                               stroke-dashoffset="94.2"
+                               stroke-linecap="round"
+                               style="stroke-dasharray: calc({{ avg_confidence }} * 3.77) 377; transform: rotate(-90deg); transform-origin: center;"/>
+                        <defs>
+                            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#1FD6D0"/>
+                                <stop offset="100%" style="stop-color:#8B5CF6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="position-absolute top-50 start-50 translate-middle">
+                        <div class="fw-bold" style="font-size: 1.5rem; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ avg_confidence }}%</div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-muted text-center mb-0" style="font-size: 0.85rem;">درجة الثقة الإجمالية للبيانات</p>
+        </div>
+    </div>
+</div>
+
+<!-- Results Table -->
+<div class="card-custom animate-in delay-3">
+    <div class="p-4 pb-0">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0"><i class="fas fa-table ms-2" style="color: var(--primary);"></i> تفاصيل السجلات</h5>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-custom filter-btn active" data-filter="all">الكل</button>
+                <button class="btn btn-sm btn-outline-custom filter-btn" data-filter="clean">سليمة</button>
+                <button class="btn btn-sm btn-outline-custom filter-btn" data-filter="review">مراجعة</button>
+                <button class="btn btn-sm btn-outline-custom filter-btn" data-filter="error">أخطاء</button>
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom mb-0" id="recordsTable">
+            <thead>
+                <tr>
+                    <th>رقم السجل</th>
+                    <th>درجة الثقة</th>
+                    <th>المشكلات المكتشفة</th>
+                    <th>الحالة</th>
+                    <th>تفاصيل</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr class="record-row" data-status="{{ record.status }}">
+                    <td>
+                        <span class="fw-bold">#{{ record.record_number }}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress-custom flex-grow-1" style="width: 80px;">
+                                <div class="progress-bar-custom" style="width: {{ record.confidence_score|floatformat:0 }}0%; height: 100%;
+                                    {% if record.confidence_score >= 0.85 %}background: #10B981;
+                                    {% elif record.confidence_score >= 0.5 %}background: #F59E0B;
+                                    {% else %}background: #EF4444;{% endif %}">
+                                </div>
+                            </div>
+                            <span class="fw-bold" style="font-size: 0.88rem;
+                                {% if record.confidence_score >= 0.85 %}color: #10B981;
+                                {% elif record.confidence_score >= 0.5 %}color: #F59E0B;
+                                {% else %}color: #EF4444;{% endif %}">
+                                {{ record.confidence_score|floatformat:2 }}
+                            </span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if record.issues %}
+                            {% for issue in record.issues_list %}
+                                <div class="mb-1" style="font-size: 0.85rem;">
+                                    <i class="fas fa-exclamation-triangle ms-1" style="color: #F59E0B; font-size: 0.75rem;"></i>
+                                    {{ issue }}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <span style="color: #10B981; font-size: 0.85rem;">
+                                <i class="fas fa-check-circle ms-1"></i> لا توجد مشاكل
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge-{{ record.status }}">
+                            {% if record.status == 'clean' %}
+                                <i class="fas fa-check-circle ms-1"></i>
+                            {% elif record.status == 'review' %}
+                                <i class="fas fa-exclamation-triangle ms-1"></i>
+                            {% elif record.status == 'error' %}
+                                <i class="fas fa-times-circle ms-1"></i>
+                            {% endif %}
+                            {{ record.status_label }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-custom" onclick="showDetail({{ record.id }})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-search-plus ms-2"></i> تفاصيل السجل</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
+                    <p class="mt-2 text-muted">جاري التحميل...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const filter = this.dataset.filter;
+            document.querySelectorAll('.record-row').forEach(row => {
+                if (filter === 'all' || row.dataset.status === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Show record detail
+    function showDetail(recordId) {
+        const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+        const modalBody = document.getElementById('modalBody');
+        modalBody.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i><p class="mt-2 text-muted">جاري التحميل...</p></div>';
+        modal.show();
+
+        fetch(`/api/record/${recordId}/`)
+            .then(r => r.json())
+            .then(data => {
+                let issuesHtml = '';
+                if (data.issues && data.issues.length > 0) {
+                    issuesHtml = data.issues.map(i =>
+                        `<div class="d-flex align-items-start gap-2 mb-2">
+                            <i class="fas fa-exclamation-triangle mt-1" style="color: #F59E0B;"></i>
+                            <span>${i}</span>
+                        </div>`
+                    ).join('');
+                } else {
+                    issuesHtml = '<div class="text-center py-2" style="color: #10B981;"><i class="fas fa-check-circle ms-2"></i> لا توجد مشاكل</div>';
+                }
+
+                let dataHtml = Object.entries(data.data).map(([k, v]) =>
+                    `<tr><td class="fw-bold">${k}</td><td>${v}</td></tr>`
+                ).join('');
+
+                let scoreColor = data.confidence_score >= 0.85 ? '#10B981' : data.confidence_score >= 0.5 ? '#F59E0B' : '#EF4444';
+
+                modalBody.innerHTML = `
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-database ms-2" style="color: var(--primary);"></i> بيانات السجل #${data.record_number}</h6>
+                            <table class="table table-sm">
+                                <tbody>${dataHtml}</tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="fw-bold mb-2"><i class="fas fa-percentage ms-2" style="color: var(--secondary);"></i> درجة الثقة</h6>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="progress-custom flex-grow-1">
+                                        <div class="progress-bar-custom" style="width: ${(data.confidence_score * 100).toFixed(0)}%; height: 100%; background: ${scoreColor};"></div>
+                                    </div>
+                                    <span class="fw-bold" style="font-size: 1.2rem; color: ${scoreColor};">${data.confidence_score.toFixed(2)}</span>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <h6 class="fw-bold mb-2"><i class="fas fa-flag ms-2" style="color: var(--primary);"></i> الحالة</h6>
+                                <span class="badge-${data.status}" style="font-size: 0.95rem;">${data.status_label}</span>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold mb-2"><i class="fas fa-exclamation-circle ms-2" style="color: #F59E0B;"></i> المشكلات المكتشفة</h6>
+                                ${issuesHtml}
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-2"><i class="fas fa-info-circle ms-2" style="color: var(--secondary);"></i> الشرح</h6>
+                                <p class="text-muted p-3 rounded-3" style="background: #f8fafc; font-size: 0.9rem;">${data.explanation}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            })
+            .catch(err => {
+                modalBody.innerHTML = '<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle fa-2x"></i><p class="mt-2">حدث خطأ أثناء تحميل البيانات</p></div>';
+            });
+    }
+</script>
+{% endblock %}

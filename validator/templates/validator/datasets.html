@@ -1,0 +1,88 @@
+{% extends "validator/base.html" %}
+{% block title %}مجموعات البيانات{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 animate-in">
+    <div>
+        <h2 class="section-title">
+            <i class="fas fa-database ms-2" style="color: var(--primary);"></i>
+            مجموعات البيانات
+        </h2>
+        <p class="section-subtitle mb-0">جميع ملفات الاستبيان المرفوعة</p>
+    </div>
+    <a href="{% url 'upload' %}" class="btn btn-gradient">
+        <i class="fas fa-plus ms-2"></i> رفع ملف جديد
+    </a>
+</div>
+
+{% if datasets %}
+<div class="card-custom animate-in delay-1">
+    <div class="table-responsive">
+        <table class="table table-custom mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>اسم الملف</th>
+                    <th>عدد السجلات</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الرفع</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ds in datasets %}
+                <tr>
+                    <td>{{ ds.id }}</td>
+                    <td>
+                        <i class="fas fa-file-csv ms-2" style="color: var(--primary);"></i>
+                        {{ ds.name }}
+                    </td>
+                    <td>{{ ds.total_records }}</td>
+                    <td>
+                        {% if ds.processed %}
+                            <span class="badge-clean"><i class="fas fa-check-circle ms-1"></i> تم التحليل</span>
+                        {% else %}
+                            <span class="badge-pending"><i class="fas fa-clock ms-1"></i> قيد الانتظار</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ ds.uploaded_at|date:"Y/m/d H:i" }}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            {% if ds.processed %}
+                                <a href="{% url 'dashboard' ds.id %}" class="btn btn-sm btn-gradient">
+                                    <i class="fas fa-chart-line ms-1"></i> عرض النتائج
+                                </a>
+                                <a href="{% url 'download_report' ds.id %}" class="btn btn-sm btn-outline-custom">
+                                    <i class="fas fa-download ms-1"></i> تحميل التقرير
+                                </a>
+                            {% else %}
+                                <a href="{% url 'validate_dataset' ds.id %}" class="btn btn-sm btn-gradient">
+                                    <i class="fas fa-play ms-1"></i> تحليل البيانات
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 animate-in">
+    <div class="stat-icon mx-auto mb-3" style="width: 80px; height: 80px; background: rgba(31, 214, 208, 0.1); color: var(--primary); font-size: 2.5rem; border-radius: 20px;">
+        <i class="fas fa-inbox"></i>
+    </div>
+    <h4 class="fw-bold">لا توجد مجموعات بيانات</h4>
+    <p class="text-muted mb-3">لم يتم رفع أي ملفات بعد. ابدأ برفع ملف استبيان للتحليل.</p>
+    <div class="d-flex justify-content-center gap-3">
+        <a href="{% url 'upload' %}" class="btn btn-gradient">
+            <i class="fas fa-cloud-upload-alt ms-2"></i> رفع ملف
+        </a>
+        <a href="{% url 'generate_sample' %}" class="btn btn-outline-custom">
+            <i class="fas fa-magic ms-2"></i> توليد بيانات تجريبية
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

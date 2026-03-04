@@ -1,0 +1,128 @@
+{% extends "validator/base.html" %}
+{% block title %}رفع بيانات الاستبيان{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="text-center mb-4 animate-in d-flex flex-column align-items-center justify-content-center">
+            <h2 class="section-title text-center">
+                <i class="fas fa-cloud-upload-alt " style="color: var(--primary);"></i>
+                رفع بيانات الاستبيان
+            </h2>
+            <p class="section-subtitle text-center">ارفع ملف البيانات بصيغة CSV أو JSON لبدء التحليل الذكي</p>
+        </div>
+
+        <div class="card-custom p-4 animate-in delay-1">
+            <form method="post" enctype="multipart/form-data" id="uploadForm">
+                {% csrf_token %}
+
+                <!-- Upload Zone -->
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-upload-alt d-block"></i>
+                    <h5 class="fw-bold mb-2">اسحب الملف هنا أو انقر للاختيار</h5>
+                    <p class="text-muted mb-3">الصيغ المدعومة: CSV, JSON</p>
+                    <div id="fileInfo" style="display: none;">
+                        <div class="d-inline-flex align-items-center gap-2 p-2 px-3 rounded-pill" style="background: rgba(31, 214, 208, 0.1);">
+                            <i class="fas fa-file-alt" style="color: var(--primary);"></i>
+                            <span id="fileName" class="fw-bold" style="color: var(--primary);"></span>
+                            <span id="fileSize" class="text-muted" style="font-size: 0.85rem;"></span>
+                        </div>
+                    </div>
+                    <input type="file" name="file" id="fileInput" accept=".csv,.json" style="display: none;" required>
+                </div>
+
+                <!-- Info cards -->
+                <div class="row g-3 mt-4">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background: rgba(31, 214, 208, 0.05); border: 1px solid rgba(31, 214, 208, 0.1);">
+                            <h6 class="fw-bold mb-2"><i class="fas fa-file-csv ms-2" style="color: var(--primary);"></i> ملف CSV</h6>
+                            <small class="text-muted">ملف مفصول بفواصل يحتوي على عناوين الأعمدة في السطر الأول</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.1);">
+                            <h6 class="fw-bold mb-2"><i class="fas fa-file-code ms-2" style="color: var(--secondary);"></i> ملف JSON</h6>
+                            <small class="text-muted">مصفوفة من الكائنات أو كائن يحتوي على حقل records أو data</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expected fields -->
+                <div class="mt-4 p-3 rounded-3" style="background: #f8fafc;">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-list-alt ms-2" style="color: var(--secondary);"></i> الحقول المتوقعة</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge rounded-pill" style="background: var(--gradient); padding: 0.5rem 1rem;">age</span>
+                        <span class="badge rounded-pill" style="background: var(--gradient); padding: 0.5rem 1rem;">gender</span>
+                        <span class="badge rounded-pill" style="background: var(--gradient); padding: 0.5rem 1rem;">education</span>
+                        <span class="badge rounded-pill" style="background: var(--gradient); padding: 0.5rem 1rem;">job_title</span>
+                        <span class="badge rounded-pill" style="background: var(--gradient); padding: 0.5rem 1rem;">years_experience</span>
+                        <span class="badge rounded-pill" style="background: var(--gradient); padding: 0.5rem 1rem;">marital_status</span>
+                        <span class="badge rounded-pill" style="background: var(--gradient); padding: 0.5rem 1rem;">income</span>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-2">
+                    <a href="{% url 'generate_sample' %}" class="btn btn-outline-custom">
+                        <i class="fas fa-magic ms-2"></i> توليد بيانات تجريبية
+                    </a>
+                    <button type="submit" class="btn btn-gradient btn-lg" id="submitBtn" disabled>
+                        <i class="fas fa-upload ms-2"></i> رفع الملف وبدء التحليل
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // File input change
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            const file = this.files[0];
+            fileName.textContent = file.name;
+            fileSize.textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
+            fileInfo.style.display = 'block';
+            submitBtn.disabled = false;
+            uploadZone.style.borderColor = '#1FD6D0';
+            uploadZone.style.background = 'rgba(31, 214, 208, 0.06)';
+        }
+    });
+
+    // Drag and drop
+    uploadZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            fileInput.dispatchEvent(new Event('change'));
+        }
+    });
+
+    // Loading state on submit
+    document.getElementById('uploadForm').addEventListener('submit', function() {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ms-2"></i> جاري الرفع والتحليل...';
+        submitBtn.disabled = true;
+    });
+</script>
+{% endblock %}
