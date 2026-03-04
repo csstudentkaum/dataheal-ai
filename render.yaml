@@ -5,6 +5,8 @@ services:
     buildCommand: "./build.sh"
     startCommand: "gunicorn dataheal_ai.wsgi:application"
     envVars:
+      - key: RENDER
+        value: "true"
       - key: DEBUG
         value: "False"
       - key: DJANGO_SECRET_KEY

@@ -8,9 +8,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dataheal-ai-hackathon-key-2026')
 
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+# Detect Render environment
+IS_RENDER = os.getenv('RENDER', '') == 'true'
+
+DEBUG = not IS_RENDER and os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+
+CSRF_TRUSTED_ORIGINS = ['https://dataheal-ai.onrender.com']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
