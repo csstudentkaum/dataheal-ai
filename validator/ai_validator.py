@@ -54,20 +54,6 @@ Years Experience: 20
   "explanation": "لا توجد تناقضات منطقية. البيانات متسقة ومنطقية."
 }
 
-مثال 3:
-Age: 22
-Gender: Male
-Pregnancy Status: Yes
-
-النتيجة:
-{
-  "confidence_score": 0.15,
-  "issues": [
-    "حالة الحمل (نعم) غير منطقية مع الجنس (ذكر)"
-  ],
-  "explanation": "تناقض واضح بين الجنس وحالة الحمل."
-}
-
 الآن حلل السجل التالي وأعد النتيجة بصيغة JSON فقط:
 
 """ + fields_text + """
@@ -137,7 +123,6 @@ def validate_with_rules(record_data: dict) -> dict:
     job_title = str(data.get('job_title', '') or data.get('job', '')).lower().strip()
     gender = str(data.get('gender', '')).lower().strip()
     marital = str(data.get('marital_status', '')).lower().strip()
-    pregnancy = str(data.get('pregnancy_status', '') or data.get('pregnant', '')).lower().strip()
 
     # Rule 1: Age vs Experience
     if age is not None and years_exp is not None:
@@ -160,12 +145,6 @@ def validate_with_rules(record_data: dict) -> dict:
                 f"المسمى الوظيفي ({data.get('job_title', '')}) لا يتوافق مع المؤهل العلمي ({data.get('education', '')})"
             )
             explanation_parts.append("المؤهل العلمي لا يتناسب مع المسمى الوظيفي")
-
-    # Rule 3: Gender vs Pregnancy
-    male_terms = ['male', 'ذكر', 'm']
-    if gender in male_terms and pregnancy in ['yes', 'نعم', 'true', '1']:
-        issues.append("حالة الحمل غير منطقية مع الجنس (ذكر)")
-        explanation_parts.append("تناقض بين الجنس وحالة الحمل")
 
     # Rule 4: Age vs Marital Status
     if age is not None and age < 14 and marital in ['married', 'متزوج', 'متزوجة', 'divorced', 'مطلق', 'مطلقة', 'widowed', 'أرمل', 'أرملة']:
@@ -248,7 +227,7 @@ def generate_sample_dataset(num_records=20):
         {"age": 19, "gender": "Male", "education": "Secondary", "job_title": "Senior Manager", "years_experience": 12, "marital_status": "Single", "income": 50000},
         {"age": 25, "gender": "Male", "education": "Bachelor", "job_title": "Engineer", "years_experience": 20, "marital_status": "Married", "income": 30000},
         {"age": 21, "gender": "Male", "education": "High School", "job_title": "Chief Doctor", "years_experience": 8, "marital_status": "Single", "income": 70000},
-        {"age": 30, "gender": "Male", "education": "Bachelor", "job_title": "Nurse", "years_experience": 7, "marital_status": "Married", "income": 12000, "pregnancy_status": "Yes"},
+        {"age": 30, "gender": "Male", "education": "Bachelor", "job_title": "Nurse", "years_experience": 7, "marital_status": "Married", "income": 12000},
         {"age": 10, "gender": "Female", "education": "PhD", "job_title": "Professor", "years_experience": 25, "marital_status": "Married", "income": 90000},
         {"age": 23, "gender": "Female", "education": "High School", "job_title": "Senior Director", "years_experience": 1, "marital_status": "Single", "income": 95000},
         {"age": 18, "gender": "Male", "education": "Primary", "job_title": "CEO", "years_experience": 10, "marital_status": "Divorced", "income": 100000},
@@ -261,7 +240,7 @@ def generate_sample_dataset(num_records=20):
 
     # Build CSV
     output = io.StringIO()
-    fieldnames = ["age", "gender", "education", "job_title", "years_experience", "marital_status", "income", "pregnancy_status"]
+    fieldnames = ["age", "gender", "education", "job_title", "years_experience", "marital_status", "income"]
     writer = csv.DictWriter(output, fieldnames=fieldnames)
     writer.writeheader()
     for r in records:
